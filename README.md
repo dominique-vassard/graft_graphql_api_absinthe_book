@@ -6,7 +6,7 @@ From Book: `Craft GraphQL APIS in Elixir with Absinthe`
 [x] Chapter 1: Meet GraphQL  
 [x] Chapter 2: Building a schema  
 [x] Chapter 3: Taking User Input  
-[] Chapter 4: Adding Flexibility  
+[x] Chapter 4: Adding Flexibility  
 [] Chapter 5: Making a Change with Mutation  
 [] Chapter 6: Going Live with Subscriptions  
 [] Chapter 7: Resolution Middleware  

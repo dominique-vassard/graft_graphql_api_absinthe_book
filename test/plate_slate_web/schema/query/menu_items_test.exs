@@ -241,4 +241,23 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
     assert Enum.find(results, &(&1["__typename"] == "Category"))
     assert Enum.find(results, &(&1["__typename"] == "MenuItem"))
   end
+
+  @query """
+  query Search($term: String!) {
+    search(matching: $term) {
+      name
+      __typename
+    }
+  }
+  """
+  @variables %{term: "e"}
+  test "search returns a list of menu items and categories (name only)" do
+    response = get(build_conn(), "/api", query: @query, variables: @variables)
+
+    assert %{"data" => %{"search" => results}} = json_response(response, 200)
+    assert length(results) > 0
+    assert Enum.find(results, &(&1["__typename"] == "Category"))
+    assert Enum.find(results, &(&1["__typename"] == "MenuItem"))
+    assert Enum.all?(results, & &1["name"])
+  end
 end
