@@ -197,24 +197,48 @@ defmodule PlateSlateWeb.Schema.Query.MenuItemsTest do
   end
 
   @query """
-  query ($filter: Menu!ItemFilter!) {
+  query ($filter: MenuItemFilter!) {
     menuItems(filter: $filter) {
       name
     }
   }
   """
   @variables %{filter: %{"addedBefore" => "invalid-date"}}
-  test "menuItems filtered byt cutom scalr with error" do
+  test "menuItems filtered by custom scalr with error" do
     response = get(build_conn(), "/api", query: @query, variables: @variables)
 
-    assert %{"error" => [%{"locations" => [%{"column" => 0, "line" => 2}], "message" => message}]} =
-             json_response(response, 400)
+    assert %{
+             "errors" => [%{"locations" => [%{"column" => 0, "line" => 2}], "message" => message}]
+           } = json_response(response, 400)
 
     expected = """
     Argument "filter" has invalid value $filter.
-    In field "addedBefore": Expected type "Date", found "invalid-date"
+    In field "addedBefore": Expected type "Date", found "invalid-date".
     """
 
-    assert expected == message
+    assert expected == message <> "\n"
+  end
+
+  @query """
+  query Search($term: String!) {
+    search(matching: $term) {
+      ...on MenuItem{
+        name
+      }
+      ...on Category {
+        name
+      }
+      __typename
+    }
+  }
+  """
+  @variables %{term: "e"}
+  test "search returns a list of menu items and categories" do
+    response = get(build_conn(), "/api", query: @query, variables: @variables)
+
+    assert %{"data" => %{"search" => results}} = json_response(response, 200)
+    assert length(results) > 0
+    assert Enum.find(results, &(&1["__typename"] == "Category"))
+    assert Enum.find(results, &(&1["__typename"] == "MenuItem"))
   end
 end
