@@ -14,6 +14,21 @@ defmodule PlateSlateWeb.Schema do
   import_types PlateSlateWeb.Schema.MenuTypes
   import_types PlateSlateWeb.Schema.OrderingTypes
 
+  def middleware(middleware, field, %{identifier: :allergy_info} = object) do
+    new_middleware = {Absinthe.Middleware.MapGet, to_string(field.identifier)}
+
+    middleware
+    |> Absinthe.Schema.replace_default(new_middleware, field, object)
+  end
+
+  def middleware(middleware, _field, %{identifier: :mutation}) do
+    middleware ++ [Middleware.ChangesetErrors]
+  end
+
+  def middleware(middleware, _field, _object) do
+    middleware
+  end
+
   scalar :date do
     parse fn input ->
       with %Absinthe.Blueprint.Input.String{value: value} <- input,
@@ -68,7 +83,6 @@ defmodule PlateSlateWeb.Schema do
     field :create_menu_item, :menu_item_result do
       arg :input, non_null(:menu_item_input)
       resolve(&Resolvers.Menu.create_item/3)
-      middleware Middleware.ChangesetErrors
     end
 
     field :place_order, :order_result do
