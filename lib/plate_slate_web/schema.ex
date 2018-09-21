@@ -9,6 +9,7 @@
 defmodule PlateSlateWeb.Schema do
   use Absinthe.Schema
   alias PlateSlateWeb.Resolvers
+  alias PlateSlateWeb.Schema.Middleware
 
   import_types PlateSlateWeb.Schema.MenuTypes
   import_types PlateSlateWeb.Schema.OrderingTypes
@@ -67,6 +68,7 @@ defmodule PlateSlateWeb.Schema do
     field :create_menu_item, :menu_item_result do
       arg :input, non_null(:menu_item_input)
       resolve(&Resolvers.Menu.create_item/3)
+      middleware Middleware.ChangesetErrors
     end
 
     field :place_order, :order_result do
