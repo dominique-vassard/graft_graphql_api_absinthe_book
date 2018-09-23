@@ -11,4 +11,12 @@ defmodule PlateSlateWeb.Resolvers.Accounts do
         {:error, "Incorrect email or password"}
     end
   end
+
+  def me(_, _, %{context: %{current_user: user}}) do
+    {:ok, user}
+  end
+
+  def me(_, _, _) do
+    {:ok, nil}
+  end
 end

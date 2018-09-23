@@ -78,16 +78,23 @@ defmodule PlateSlateWeb.Schema do
       arg :matching, non_null(:string)
       resolve &Resolvers.Menu.search/3
     end
+
+    field :me, :user do
+      midddleware(Middleware.Authorize, :any)
+      resolve &Resolvers.Accounts.me/3
+    end
   end
 
   mutation do
     field :create_menu_item, :menu_item_result do
       arg :input, non_null(:menu_item_input)
+      middleware Middleware.Authorize, "employee"
       resolve(&Resolvers.Menu.create_item/3)
     end
 
     field :place_order, :order_result do
       arg :input, non_null(:place_order_input)
+      middleware Middleware.Authorize, :any
       resolve &Resolvers.Ordering.place_order/3
     end
 
@@ -107,13 +114,28 @@ defmodule PlateSlateWeb.Schema do
       arg :role, non_null(:role)
 
       resolve &Resolvers.Accounts.login/3
+
+      middleware fn res, _ ->
+        with %{value: %{user: user}} <- res do
+          %{res | context: Map.put(res.context, :current_user, user)}
+        end
+      end
     end
   end
 
   subscription do
     field :new_order, :order do
-      config fn _args, _info ->
-        {:ok, topic: "*"}
+      config fn _args, %{context: context} ->
+        case context[:current_user] do
+          %{role: "customer", id: id} ->
+            {:ok, topic: id}
+
+          %{role: "employee"} ->
+            {:ok, topic: "*"}
+
+          _ ->
+            {:error, "unauthorized"}
+        end
       end
     end
 
