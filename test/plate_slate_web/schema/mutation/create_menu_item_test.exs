@@ -2,6 +2,7 @@ defmodule PlateSlateWeb.Schema.Mutation.CreateMenuItemTest do
   use PlateSlateWeb.ConnCase, async: true
 
   alias PlateSlate.{Menu, Repo}
+  alias PlateSlateWeb.Support.Factory
   import Ecto.Query
 
   setup do
@@ -14,6 +15,11 @@ defmodule PlateSlateWeb.Schema.Mutation.CreateMenuItemTest do
       |> to_string()
 
     {:ok, category_id: category_id}
+  end
+
+  defp auth_user(conn, user) do
+    token = PlateSlateWeb.Authentication.sign(%{role: user.role, id: user.id})
+    put_req_header(conn, "authorization", "Bearer #{token}")
   end
 
   @query """
@@ -39,7 +45,8 @@ defmodule PlateSlateWeb.Schema.Mutation.CreateMenuItemTest do
       "categoryId" => category_id
     }
 
-    conn = build_conn()
+    user = Factory.create_user("employee")
+    conn = build_conn() |> auth_user(user)
     conn = post(conn, "/api", query: @query, variables: %{"menuItem" => menu_item})
 
     assert json_response(conn, 200) == %{
@@ -64,20 +71,9 @@ defmodule PlateSlateWeb.Schema.Mutation.CreateMenuItemTest do
       "categoryId" => category_id
     }
 
-    conn = build_conn()
+    user = Factory.create_user("employee")
+    conn = build_conn() |> auth_user(user)
     conn = post(conn, "/api", query: @query, variables: %{"menuItem" => menu_item})
-
-    # assert json_response(conn, 200) == %{
-    #          "data" => %{"createMenuItem" => nil},
-    #          "errors" => [
-    #            %{
-    #              "locations" => [%{"column" => 0, "line" => 2}],
-    #              "message" => "Could not create menu item.",
-    #              "details" => %{"name" => ["has already been taken"]},
-    #              "path" => ["createMenuItem"]
-    #            }
-    #          ]
-    #        }
 
     assert json_response(conn, 200) == %{
              "data" => %{
@@ -91,6 +87,30 @@ defmodule PlateSlateWeb.Schema.Mutation.CreateMenuItemTest do
                  "menuItem" => nil
                }
              }
+           }
+  end
+
+  test "Only employees are allowed to create menuItems", %{category_id: category_id} do
+    menu_item = %{
+      "name" => "French Dip",
+      "description" => "Roast beef, caramelized onions, horseradish, ...",
+      "price" => "5.75",
+      "categoryId" => category_id
+    }
+
+    user = Factory.create_user("customer")
+    conn = build_conn() |> auth_user(user)
+    conn = post(conn, "/api", query: @query, variables: %{"menuItem" => menu_item})
+
+    assert json_response(conn, 200) == %{
+             "data" => %{"createMenuItem" => nil},
+             "errors" => [
+               %{
+                 "locations" => [%{"column" => 0, "line" => 2}],
+                 "message" => "unauthorized",
+                 "path" => ["createMenuItem"]
+               }
+             ]
            }
   end
 end

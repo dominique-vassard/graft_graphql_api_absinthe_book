@@ -11,6 +11,7 @@ defmodule PlateSlateWeb.Schema do
   alias PlateSlateWeb.Resolvers
   alias PlateSlateWeb.Schema.Middleware
 
+  import_types PlateSlateWeb.Schema.AccountsTypes
   import_types PlateSlateWeb.Schema.MenuTypes
   import_types PlateSlateWeb.Schema.OrderingTypes
 
@@ -98,6 +99,14 @@ defmodule PlateSlateWeb.Schema do
     field :complete_order, :order_result do
       arg :id, non_null(:id)
       resolve &Resolvers.Ordering.complete_order/3
+    end
+
+    field :login, :session do
+      arg :email, non_null(:string)
+      arg :password, non_null(:string)
+      arg :role, non_null(:role)
+
+      resolve &Resolvers.Accounts.login/3
     end
   end
 
