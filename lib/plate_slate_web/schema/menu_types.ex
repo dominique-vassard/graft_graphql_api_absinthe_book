@@ -1,5 +1,6 @@
 defmodule PlateSlateWeb.Schema.MenuTypes do
   use Absinthe.Schema.Notation
+  import Absinthe.Resolution.Helpers
   alias PlateSlateWeb.Resolvers
 
   @desc "Filtering options for the menu item list"
@@ -64,7 +65,10 @@ defmodule PlateSlateWeb.Schema.MenuTypes do
     field :decription, :string
 
     field :items, list_of(:menu_item) do
-      resolve &Resolvers.Menu.items_for_category/3
+      arg :filter, :menu_item_filter
+      arg :order, type: :sort_order, default_value: :asc
+      resolve dataloader(PlateSlate.Menu, :items)
+      # resolve &Resolvers.Menu.items_for_category/3
     end
   end
 

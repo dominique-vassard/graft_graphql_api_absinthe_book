@@ -42,6 +42,21 @@ defmodule PlateSlateWeb.Schema do
     middleware
   end
 
+  def dataloader() do
+    alias PlateSlate.Menu
+
+    Dataloader.new()
+    |> Dataloader.add_source(Menu, Menu.data())
+  end
+
+  def context(ctx) do
+    Map.put(ctx, :loader, dataloader())
+  end
+
+  def plugins() do
+    [Absinthe.Middleware.Dataloader | Absinthe.Plugin.defaults()]
+  end
+
   scalar :date do
     parse fn input ->
       with %Absinthe.Blueprint.Input.String{value: value} <- input,
