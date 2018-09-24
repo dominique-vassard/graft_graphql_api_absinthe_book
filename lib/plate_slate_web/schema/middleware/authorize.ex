@@ -12,6 +12,9 @@ defmodule PlateSlateWeb.Schema.Middleware.Authorize do
     end
   end
 
+  @doc """
+  comment
+  """
   defp correct_role?(%{}, :any), do: true
   defp correct_role?(%{role: role}, role), do: true
   defp correct_role?(_, _), do: false
