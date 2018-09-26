@@ -2,6 +2,7 @@ defmodule PlateSlateWeb.Schema.MenuTypes do
   use Absinthe.Schema.Notation
   import Absinthe.Resolution.Helpers
   alias PlateSlateWeb.Resolvers
+  alias PlateSlateWeb.Schema.Middleware
 
   @desc "Filtering options for the menu item list"
   input_object :menu_item_filter do
@@ -47,11 +48,32 @@ defmodule PlateSlateWeb.Schema.MenuTypes do
     field :category, :category do
       resolve &Resolvers.Menu.category_for_item/3
     end
+
+    field :order_history, :order_history do
+      arg :since, :date
+      middleware Middleware.Authorize, "employee"
+      resolve &Resolvers.Ordering.order_history/3
+    end
   end
 
   object :allergy_info do
     field :allergen, :string
     field :severity, :string
+  end
+
+  object :order_history do
+    field :orders, list_of(:order) do
+      resolve &Resolvers.Ordering.orders/3
+    end
+
+    field :quantity, non_null(:integer) do
+      resolve Resolvers.Ordering.stat(:quantity)
+    end
+
+    @desc "Gross revenue"
+    field :gross, non_null(:float) do
+      resolve Resolvers.Ordering.stat(:gross)
+    end
   end
 
   object :menu_item_result do

@@ -14,6 +14,7 @@ defmodule PlateSlateWeb.Schema do
   import_types PlateSlateWeb.Schema.AccountsTypes
   import_types PlateSlateWeb.Schema.MenuTypes
   import_types PlateSlateWeb.Schema.OrderingTypes
+  import_types Absinthe.Phoenix.Types
 
   def middleware(middleware, field, object) do
     middleware
@@ -96,9 +97,14 @@ defmodule PlateSlateWeb.Schema do
   query do
     @desc "The list of available items on the menu"
     field :menu_items, list_of(:menu_item) do
-      arg :filter, non_null(:menu_item_filter)
+      arg :filter, :menu_item_filter
       arg :order, type: :sort_order, default_value: :asc
       resolve &Resolvers.Menu.menu_items/3
+    end
+
+    field :menu_item, :menu_item do
+      arg :id, non_null(:id)
+      resolve &Resolvers.Menu.get_item/3
     end
 
     field :search, list_of(:search_result) do

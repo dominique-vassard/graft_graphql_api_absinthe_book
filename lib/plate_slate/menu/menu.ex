@@ -139,7 +139,7 @@ defmodule PlateSlate.Menu do
   #   |> Repo.all()
   # end
 
-  def list_item(args) do
+  def list_items(args) do
     args
     |> items_query()
     |> Repo.all()
