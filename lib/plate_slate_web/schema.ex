@@ -8,6 +8,7 @@
 # ---
 defmodule PlateSlateWeb.Schema do
   use Absinthe.Schema
+  use Absinthe.Relay.Schema, :modern
   alias PlateSlateWeb.Resolvers
   alias PlateSlateWeb.Schema.Middleware
 
@@ -88,6 +89,16 @@ defmodule PlateSlateWeb.Schema do
     value :desc
   end
 
+  node interface do
+    resolve_type fn
+      %PlateSlate.Menu.Item{}, _ ->
+        :menu_item
+
+      _, _ ->
+        nil
+    end
+  end
+
   @desc "An error encoutered trying to persist input"
   object :input_error do
     field :key, non_null(:string)
@@ -95,8 +106,18 @@ defmodule PlateSlateWeb.Schema do
   end
 
   query do
+    node field do
+      resolve fn
+        %{type: :menu_item, id: local_id}, _ ->
+          {:ok, PlateSlate.Repo.get(PlateSlate.Menu.Item, local_id)}
+
+        _, _ ->
+          {:error, "Unknown node"}
+      end
+    end
+
     @desc "The list of available items on the menu"
-    field :menu_items, list_of(:menu_item) do
+    connection field :menu_items, node_type: :menu_item do
       arg :filter, :menu_item_filter
       arg :order, type: :sort_order, default_value: :asc
       resolve &Resolvers.Menu.menu_items/3
@@ -187,6 +208,12 @@ defmodule PlateSlateWeb.Schema do
 
       resolve fn %{order: order}, _, _ ->
         {:ok, order}
+      end
+    end
+
+    field :new_menu_item, :menu_item do
+      config fn _args, _info ->
+        {:ok, topic: "*"}
       end
     end
   end

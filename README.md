@@ -13,4 +13,4 @@ From Book: `Craft GraphQL APIS in Elixir with Absinthe`
 [x] Chapter 8: Securing with Authentication and Authorization  
 [x] Chapter 9: Tuning Resolution 
 [x] Chapter 10: Driving Phoenix Actions with GraphQL  
-[] Chapter 11: Integrating with the Frontend  
+[x] Chapter 11: Integrating with the Frontend  

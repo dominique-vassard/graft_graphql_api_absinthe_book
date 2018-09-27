@@ -154,6 +154,9 @@ defmodule PlateSlate.Menu do
       {:filter, filter}, query ->
         query
         |> filter_with(filter)
+
+      _, query ->
+        query
     end)
   end
 

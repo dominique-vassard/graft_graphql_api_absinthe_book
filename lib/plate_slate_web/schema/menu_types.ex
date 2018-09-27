@@ -1,5 +1,6 @@
 defmodule PlateSlateWeb.Schema.MenuTypes do
   use Absinthe.Schema.Notation
+  use Absinthe.Relay.Schema.Notation, :modern
   import Absinthe.Resolution.Helpers
   alias PlateSlateWeb.Resolvers
   alias PlateSlateWeb.Schema.Middleware
@@ -36,9 +37,9 @@ defmodule PlateSlateWeb.Schema.MenuTypes do
     field :category_id, non_null(:id)
   end
 
-  object :menu_item do
+  node object(:menu_item) do
     interfaces [:search_result]
-    field :id, :id
+    # field :id, :id
     field :name, :string
     field :description, :string
     field :price, :decimal
@@ -55,6 +56,8 @@ defmodule PlateSlateWeb.Schema.MenuTypes do
       resolve &Resolvers.Ordering.order_history/3
     end
   end
+
+  connection(node_type: :menu_item)
 
   object :allergy_info do
     field :allergen, :string
